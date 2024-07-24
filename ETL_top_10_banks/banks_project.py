@@ -4,7 +4,7 @@ from datetime import datetime as dt
 import sqlite3
 
 data_url = 'https://web.archive.org/web/20230908091635%20/https://en.wikipedia.org/wiki/List_of_largest_banks'
-exchange_rate_csv = 'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMSkillsNetwork-PY0221EN-Coursera/labs/v2/exchange_rate.csv'
+exchange_rate_csv = './exchange_rate.csv'
 csv_file = './Largest_banks_data.csv'
 table_name = 'Largest_banks'
 db = 'Banks.db'
@@ -17,6 +17,7 @@ def extact():
     MC_table = tables[1]
     MC_table.drop(columns=['Rank'],inplace=True)
     MC_table.columns = columns
+    print(f'extract:\n{MC_table}')
     return MC_table
 
 def transform(dataframe):
@@ -28,33 +29,43 @@ def transform(dataframe):
     for currency,rate in zip(Currency,Rate):
         dataframe[f'MC_{currency}_Billion'] = dataframe['MC_USD_Billion'] * rate
         dataframe[f'MC_{currency}_Billion'] = dataframe[f'MC_{currency}_Billion'].round(2)
+    print(f'transform:\n{dataframe}')
+    print(f'market capitalization of the 5th largest bank in billion EUR: {dataframe["MC_EUR_Billion"][4]}')
     return dataframe
 
-def load(dataframe):
+def load_to_csv(dataframe):
     dataframe.to_csv(csv_file, index=False)
+
+def load_to_db(dataframe):
     dataframe.to_sql(table_name, sql_connection, if_exists='replace', index=False)
 
+def run_queries():
+    print(pd.read_sql(f'select * from {table_name}',sql_connection))
+    print(pd.read_sql(f'SELECT AVG(MC_GBP_Billion) FROM {table_name}',sql_connection))
+    print(pd.read_sql(f'SELECT Name from {table_name} LIMIT 5',sql_connection))
 
 
-def log(massage):
+
+def log_progress(massage):
     with open(log_file,'a') as file_log:
-        file_log.write(f'{dt.now()} - {massage}\n')
+        file_log.write(f'{dt.now()} : {massage}\n')
 
-log('ETL process begins')
+log_progress('ETL process begins')
 
-log('extraction begins')
+log_progress('extraction begins')
 data = extact()
-log('extraction ends')
-log('transformation begins')
+log_progress('extraction ends')
+log_progress('transformation begins')
 data = transform(data)
-log('transformation ends')
-log('loading begins')
-load(data)
-log('loading ends')
+log_progress('transformation ends')
+log_progress('loading begins')
+load_to_csv(data)
+load_to_db(data)
+log_progress('loading ends')
 
-log('ETL process ends')
+log_progress('ETL process ends')
 
-print(pd.read_sql(f'select * from {table_name}',sql_connection))
+run_queries()
 
 
 
