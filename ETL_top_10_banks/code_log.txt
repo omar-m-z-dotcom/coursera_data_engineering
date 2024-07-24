@@ -1,0 +1,8 @@
+2024-07-24 01:31:05.975531 - ETL process begins
+2024-07-24 01:31:05.975618 - extraction begins
+2024-07-24 01:31:07.545065 - extraction ends
+2024-07-24 01:31:07.545187 - transformation begins
+2024-07-24 01:31:07.662281 - transformation ends
+2024-07-24 01:31:07.662365 - loading begins
+2024-07-24 01:31:07.673704 - loading ends
+2024-07-24 01:31:07.673758 - ETL process ends
